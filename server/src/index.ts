@@ -14,7 +14,7 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
     console.log(`Got request with URL ${req.url}`);
 
     if (!req.url) {
-        Handler.writeNotfound(res);
+        Handler.writeNotFound(res);
         return;
     }
 
@@ -28,7 +28,7 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
         }
     }
 
-    Handler.writeNotfound(res);
+    Handler.writeNotFound(res);
 });
 
 server.listen(PORT);

@@ -29,7 +29,7 @@ export abstract class Handler {
     }
 
     // Used within main
-    static writeNotfound(res: ServerResponse) {
+    static writeNotFound(res: ServerResponse) {
         res.statusCode = 404;
         res.end();
     }
