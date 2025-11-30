@@ -207,7 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 server/node_modules
-pico/testing.py
-pico/.vscode
-pico/.micropico
-pico/pico_wifi.py
+testing.py
+.vscode
+.micropico
+pico_wifi.py
