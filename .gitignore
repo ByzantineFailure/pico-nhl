@@ -210,3 +210,4 @@ server/node_modules
 pico/testing.py
 pico/.vscode
 pico/.micropico
+pico/pico_wifi.py

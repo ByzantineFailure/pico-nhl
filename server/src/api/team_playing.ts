@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { Handler } from "./handler.js";
 import {TeamData} from './team_data.js';
-import type { GameTeamData, ScheduledGame } from "./api_types.js";
+import { type GameTeamData, type ScheduledGame, GameState } from "./api_types.js";
 
 /**
  * Handler which provides a response indicating whether a the team is playing or not.
@@ -24,7 +24,9 @@ export class TeamPlaying extends Handler {
 
             this.writeSuccess(res, {
                 teamPlaying: !!game, 
-                gameState: game?.gameState,
+                // If there's no game being played we won't have a state.
+                // Set the state to Future because there'll _always_ be another game, right?
+                gameState: game?.gameState || GameState.Future,
                 score: getScore(this.team, game)
             });
         } catch {
