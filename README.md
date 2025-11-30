@@ -149,3 +149,9 @@ The value of `month` is composed into the URL; this value defaults to `'now'`, w
 Calls [Get Week Schedule](https://github.com/Zmalski/NHL-API-Reference?tab=readme-ov-file#get-week-schedule) from the NHL API via `urequests` and parses its JSON response as a `dict` using `ujson`.
 
 The value of `week` is composed into the URL; this value defaults to `'now'`, which gets the current week's schedule.  Note that `now` does not require time to be set on the Pico, the NHL API handles this for us.
+
+## Notes
+
+This is a library I built to help my husband out with a project.  You're welcome to use it since it's intended to be reasonably general, but I'm unlikely to take feature requests or make any updates to it based on github requests.  It's intended as a for-purpose abstraction.
+
+If you're looking for some wifi connectivity to use, consider [pico-wifi](https://github.com/ByzantineFailure/pico-wifi)
