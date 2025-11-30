@@ -1,6 +1,6 @@
 import http, {IncomingMessage, ServerResponse} from 'http';
 
-import { TeamPlaying, Handler } from './api/index.js';
+import { TeamPlaying, Handler } from './handler/index.js';
 
 const PORT = process.env['PORT'] || 55555;
 const TEAM = process.env['TEAM'] || 'SEA';
@@ -19,11 +19,10 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse) => 
     }
 
     const url = new URL(`http://${req.headers.host ?? 'localhost'}${req.url}`);
-    const path = url.pathname.trim();
 
     for (const handler of handlers) {
-        if (handler.getPath() === path) {
-            handler.handle(req, res);
+        if (handler.shouldHandle(req, url)) {
+            handler.handle(req, res, url);
             return;
         }
     }

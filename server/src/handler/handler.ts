@@ -7,8 +7,9 @@ export interface ErrorData {
 
 /** Interface for handlers */
 export abstract class Handler {
-    abstract getPath(): string;
-    abstract handle(req: IncomingMessage, res: ServerResponse): Promise<void>
+    abstract shouldHandle(req: IncomingMessage, url: URL): boolean;
+
+    abstract handle(req: IncomingMessage, res: ServerResponse, url: URL): Promise<void>
 
     writeSuccess(res: ServerResponse, data: {}) {
         res.statusCode = 200;

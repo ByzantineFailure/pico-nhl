@@ -13,3 +13,7 @@ See each individual directory for their use and APIs
 
 I could have _probably_ done this without the server if I wasn't too lazy to process the JSON responses as a stream.  However, I _am_ lazy _and_ happen to have a server around the house to host the API.
 
+The goal here is to build a neat little LED sign that ligts up and throws some patterns based on the state of a currently-active Hockey game.  I'm helping my husband out by building some MicroPython libraries to do interaction with data sources.
+
+Other repos that may be useful if you're doing something similar:
+* [PicoWifi](https://github.com/ByzantineFailure/pico-wifi)

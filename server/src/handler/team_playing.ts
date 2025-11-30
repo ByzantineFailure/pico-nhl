@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "http";
+import { type GameTeamData, type ScheduledGame, GameState, TeamData} from "../api/index.js";
+
 import { Handler } from "./handler.js";
-import {TeamData} from './team_data.js';
-import { type GameTeamData, type ScheduledGame, GameState } from "./api_types.js";
 
 /**
  * Handler which provides a response indicating whether a the team is playing or not.
@@ -13,12 +13,12 @@ export class TeamPlaying extends Handler {
         super();
         this.teamData = new TeamData(this.team);
     }
-
-    getPath(): string {
-        return '/playing';
+    
+    override shouldHandle(_: IncomingMessage, url: URL): boolean {
+        return url.pathname === '/playing';
     }
 
-    async handle(_: IncomingMessage, res: ServerResponse): Promise<void> {
+    async handle(_: IncomingMessage, res: ServerResponse, __: URL): Promise<void> {
         try {
             const game = await this.teamData.getLiveScheduledGame();
 

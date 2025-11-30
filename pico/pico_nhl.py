@@ -1,5 +1,4 @@
 import urequests as requests
-import pico_wifi
 
 class GameData:
     def __init__(self,
@@ -27,7 +26,6 @@ class PicoNhl:
 
         self.host = host
         self.prefix = prefix
-        self._wifi = None
         return
 
     def getGameData(self) -> GameData:
