@@ -1,5 +1,7 @@
 # PicoNhl Server
 
+**DEPRECATED:  Not for use any longer, here for reference, mostly for the types I set up.**
+
 The server used to power the PicoNhl library.  Leverages the NHL public API (unclear if it's intentionally public) to provide information on a single team.
 
 Unofficial NHL API documentation: https://github.com/Zmalski/NHL-API-Reference
