@@ -55,7 +55,7 @@ The NHL API publishes new game data every 20 seconds, so a score or game state c
 
 Fetches the schedule from the NHL API and gets the first game with a start date greater than now.  If no upcoming game is available within the schedule window, returns `GameData.emptyData()`.
 
-**This method uses the time on the Pico W.  Ensure you've set it before using this method.**
+**This method uses the time on the Pico W.  Ensure you've set the Pico's clock to UTC before using this method** (e.g. with `ntptime.settime()`, which sets UTC).  Game start times from the API are in UTC and are compared directly against the Pico's clock, so a clock set to local time will be off by your UTC offset.
 
 ### GameData - PUBLIC
 
@@ -131,7 +131,7 @@ Fetches the schedule from the NHL API and gets any game that is currently active
 
 ##### fetchNextScheduledGame()
 
-Fetches the schedule from the NHL API and gets the first game with a start date greater than now.  If no upcoming game is available within the schedule window, returns `None`.
+Fetches the schedule from the NHL API and gets the first game with a start date greater than now.  If no upcoming game is available within the schedule window, returns `None`.  Like `getNextGameData()`, this requires the Pico's clock to be set to UTC.
 
 ### NhlApi - INTERNAL
 
@@ -160,7 +160,7 @@ Observations from polling the API during live games on 2026-10-31.  The API is u
 
 ## Testing
 
-Unit tests run on a regular computer with Python 3.10+ and no extra packages.  `tests/micropython_stubs.py` stands in for MicroPython's `urequests` and `utime`, and the tests run the library against real NHL API responses saved in `tests/fixtures/` (see that folder's README for where each one came from).
+Unit tests run on a regular computer with Python 3.10+ and no extra packages.  `tests/micropython_stubs.py` stands in for MicroPython's `urequests` and `utime`, and the tests run the library against real NHL API responses saved in `tests/fixtures/` (see that folder's README for where each one came from).  The `utime` stand-in treats times as UTC, matching a Pico whose clock is set to UTC.
 
 From the repository root:
 

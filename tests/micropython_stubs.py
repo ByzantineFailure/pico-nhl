@@ -5,7 +5,7 @@ pico_nhl imports `urequests` and `utime`, which only exist on MicroPython. Call
 `sys.modules`:
 
 * `urequests.get(url)` records the URL and returns whatever response was queued
-  with `serve()` / `serve_fixture()`.
+  with `serve()` / `serve_fixture()`, or raises the exception set with `fail()`.
 * `utime.time()` returns the value set with `set_time()`.
 * `utime.mktime()` accepts MicroPython's 8-tuple and treats it as UTC, which is
   how it behaves on a Pico whose RTC is set to UTC (e.g. via `ntptime`).
@@ -21,24 +21,34 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 class FakeResponse:
-    """Mimics the parts of a MicroPython requests Response that pico_nhl uses."""
+    """Mimics the parts of a MicroPython requests Response that pico_nhl uses.
 
-    def __init__(self, status_code: int, content: bytes):
+    On MicroPython the body is read from the socket when `.json()` is called, so
+    a connection lost mid-body surfaces there; `read_error` simulates that.
+    """
+
+    def __init__(self, status_code: int, content: bytes, read_error: Exception = None):
         self.status_code = status_code
         self.content = content
+        self.read_error = read_error
 
     def json(self):
+        if self.read_error is not None:
+            raise self.read_error
         return json.loads(self.content)
 
 
 class _State:
     response = None
+    error = None
     requested_urls = []
     now = 0
 
 
 def _get(url, *args, **kwargs):
     _State.requested_urls.append(url)
+    if _State.error is not None:
+        raise _State.error
     if _State.response is None:
         raise AssertionError(f"unexpected request (no response queued): {url}")
     return _State.response
@@ -63,13 +73,20 @@ def install():
 
 def reset():
     _State.response = None
+    _State.error = None
     _State.requested_urls = []
     _State.now = 0
 
 
-def serve(status_code: int, content: bytes):
+def serve(status_code: int, content: bytes, read_error: Exception = None):
     """Queue the response every subsequent `urequests.get` call returns."""
-    _State.response = FakeResponse(status_code, content)
+    _State.error = None
+    _State.response = FakeResponse(status_code, content, read_error)
+
+
+def fail(error: Exception):
+    """Make every subsequent `urequests.get` call raise `error`, as on a network failure."""
+    _State.error = error
 
 
 def load_fixture(name: str) -> bytes:

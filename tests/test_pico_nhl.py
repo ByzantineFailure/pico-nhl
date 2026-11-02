@@ -206,6 +206,66 @@ class ActiveGameTests(StubbedTestCase):
             PicoNhl(team="SEA", scheduleWindow=99).getActiveGameData()
 
 
+class NetworkFailureTests(StubbedTestCase):
+    """Current behavior when the network fails: exceptions propagate to the caller.
+
+    pico_nhl doesn't catch errors from urequests, so getActiveGameData() and
+    getNextGameData() raise instead of returning GameData.emptyData(). These tests
+    pin that behavior down; update them when the library starts handling failures.
+    """
+
+    # The OSErrors MicroPython raises on a Pico: a failed DNS lookup (getaddrinfo
+    # returns a negative code), a timeout, and a dropped connection.
+    CONNECT_ERRORS = (
+        ("dns failure", OSError(-2)),
+        ("timeout", OSError(110, "ETIMEDOUT")),
+        ("connection reset", OSError(104, "ECONNRESET")),
+    )
+
+    def test_connect_failure_raises_from_active_game(self):
+        for name, error in self.CONNECT_ERRORS:
+            for window in (SCHEDULE_WINDOW_WEEK, SCHEDULE_WINDOW_MONTH):
+                with self.subTest(failure=name, window=window):
+                    stubs.fail(error)
+                    with self.assertRaises(OSError) as raised:
+                        PicoNhl(team="PIT", scheduleWindow=window).getActiveGameData()
+                    self.assertIs(raised.exception, error)
+
+    def test_connect_failure_raises_from_next_game(self):
+        stubs.set_time("2026-10-31T22:46:32Z")
+        for name, error in self.CONNECT_ERRORS:
+            with self.subTest(failure=name):
+                stubs.fail(error)
+                with self.assertRaises(OSError):
+                    PicoNhl(team="PIT", scheduleWindow=SCHEDULE_WINDOW_WEEK).getNextGameData()
+
+    def test_connection_lost_while_reading_body_raises(self):
+        error = OSError(104, "ECONNRESET")
+        stubs.serve(200, b"", read_error=error)
+        with self.assertRaises(OSError) as raised:
+            PicoNhl(team="PIT", scheduleWindow=SCHEDULE_WINDOW_WEEK).getActiveGameData()
+        self.assertIs(raised.exception, error)
+
+    def test_truncated_body_raises_value_error(self):
+        # The API ends a MicroPython (HTTP/1.0) response by closing the connection,
+        # with no Content-Length, so a connection that drops early looks like a
+        # successful 200 with a partial body. Parsing it fails.
+        body = stubs.load_fixture("live_2-3_pit_week.json")
+        stubs.serve(200, body[: len(body) // 2])
+        with self.assertRaises(ValueError):
+            PicoNhl(team="PIT", scheduleWindow=SCHEDULE_WINDOW_WEEK).getActiveGameData()
+
+    def test_next_call_works_after_a_failure(self):
+        nhl = PicoNhl(team="PIT", scheduleWindow=SCHEDULE_WINDOW_WEEK)
+        stubs.fail(OSError(110, "ETIMEDOUT"))
+        with self.assertRaises(OSError):
+            nhl.getActiveGameData()
+        stubs.serve_fixture("live_2-3_pit_week.json")
+        game = nhl.getActiveGameData()
+        self.assertTrue(game.playing)
+        self.assertEqual((game.teamScore, game.opponentScore), (2, 3))
+
+
 class NextGameTests(StubbedTestCase):
     """getNextGameData() with utime.time() set to when each fixture was captured."""
 
